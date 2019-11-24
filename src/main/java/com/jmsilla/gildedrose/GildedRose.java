@@ -11,6 +11,8 @@ class GildedRose {
     
     private static final int MIN_QUALITY = 0;
     private static final int MAX_QUALITY = 50;
+    private static final int BACKSTAGE_DOUBLE_QUALITY_DAYS_THRESHOLD = 10;
+    private static final int BACKSTAGE_TRIPLE_QUALITY_DAYS_THRESHOLD = 5;
 
     public GildedRose(Item[] items) {
         this.items = items;
@@ -24,43 +26,48 @@ class GildedRose {
     private void updateItem(Item item) {
         switch(item.name) {
         case ItemNames.AGED_BRIE:
-            incrementItemQuality(item);
             decrementItemSellIn(item);
-            
-            if (sellInDayHasPassed(item))
-                incrementItemQuality(item);
-            
+            updateAgedBrieQuality(item);
             break;
-            
         case ItemNames.BACKSTAGE:
-            incrementItemQuality(item);
-            
-            if (daysToItemSellAreLessThan(item, 11))
-                incrementItemQuality(item);
-            
-            if (daysToItemSellAreLessThan(item, 6))
-                incrementItemQuality(item);
-            
             decrementItemSellIn(item);
-            
-            if (sellInDayHasPassed(item))
-                removeItemQuality(item);
-            
+            updateBackstageQuality(item);
             break;
-            
         case ItemNames.SULFURAS:
             break;
-        
         default:
-            decrementItemQuality(item);
-            
             decrementItemSellIn(item);
-            
-            if (sellInDayHasPassed(item))
-                decrementItemQuality(item);
+            updateNormalItemQuality(item);
         }
     }
 
+    private void updateAgedBrieQuality(Item item) {
+        incrementItemQuality(item);
+        
+        if (sellInDayHasPassed(item))
+            incrementItemQuality(item);
+    }
+    
+    private void updateBackstageQuality(Item item) {
+        incrementItemQuality(item);
+        
+        if (daysToItemSellAreLessThan(item, BACKSTAGE_DOUBLE_QUALITY_DAYS_THRESHOLD))
+            incrementItemQuality(item);
+        
+        if (daysToItemSellAreLessThan(item, BACKSTAGE_TRIPLE_QUALITY_DAYS_THRESHOLD))
+            incrementItemQuality(item);
+        
+        if (sellInDayHasPassed(item))
+            removeItemQuality(item);
+    }
+
+    private void updateNormalItemQuality(Item item) {
+        decrementItemQuality(item);
+        
+        if (sellInDayHasPassed(item))
+            decrementItemQuality(item);
+    }
+    
     private void incrementItemQuality(Item item) {
         if (item.quality < MAX_QUALITY)
             item.quality = item.quality + 1;
